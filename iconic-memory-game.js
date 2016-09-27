@@ -8869,24 +8869,6 @@ var _user$project$Main$generateNewGrid = F2(
 				},
 				grid));
 	});
-var _user$project$Main$init = function () {
-	var initialState = {
-		grid: A2(
-			_user$project$Main$generateNewGrid,
-			A2(_elm_lang$core$List$repeat, 12, 0),
-			4),
-		seekRow: 0,
-		cols: 4,
-		rows: 3,
-		showTime: 450,
-		delay: 50,
-		score: 0,
-		error: '',
-		showLetters: false,
-		indicateRow: false
-	};
-	return {ctor: '_Tuple2', _0: initialState, _1: _elm_lang$core$Platform_Cmd$none};
-}();
 var _user$project$Main$Model = function (a) {
 	return function (b) {
 		return function (c) {
@@ -8897,7 +8879,9 @@ var _user$project$Main$Model = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {grid: a, seekRow: b, cols: c, rows: d, showTime: e, delay: f, score: g, error: h, showLetters: i, indicateRow: j};
+										return function (k) {
+											return {grid: a, seekRow: b, cols: c, rows: d, showTime: e, delay: f, score: g, error: h, letters: i, showLetters: j, indicateRow: k};
+										};
 									};
 								};
 							};
@@ -8919,214 +8903,6 @@ var _user$project$Main$SpeedUp = {ctor: 'SpeedUp'};
 var _user$project$Main$CheckAnswer = function (a) {
 	return {ctor: 'CheckAnswer', _0: a};
 };
-var _user$project$Main$TickFail = function (a) {
-	return {ctor: 'TickFail', _0: a};
-};
-var _user$project$Main$FlashGrid = function (a) {
-	return {ctor: 'FlashGrid', _0: a};
-};
-var _user$project$Main$flashGrid = function (model) {
-	return A3(
-		_elm_lang$core$Task$perform,
-		_user$project$Main$TickFail,
-		_user$project$Main$FlashGrid,
-		_elm_lang$core$Process$sleep(
-			_elm_lang$core$Basics$toFloat(model.showTime)));
-};
-var _user$project$Main$PromptForAnswer = function (a) {
-	return {ctor: 'PromptForAnswer', _0: a};
-};
-var _user$project$Main$promptForAnswer = function (model) {
-	return A3(
-		_elm_lang$core$Task$perform,
-		_user$project$Main$TickFail,
-		_user$project$Main$PromptForAnswer,
-		_elm_lang$core$Process$sleep(
-			_elm_lang$core$Basics$toFloat(model.delay)));
-};
-var _user$project$Main$GetNewGrid = function (a) {
-	return {ctor: 'GetNewGrid', _0: a};
-};
-var _user$project$Main$getNewGrid = function (model) {
-	return A2(
-		_elm_lang$core$Random$generate,
-		_user$project$Main$GetNewGrid,
-		A2(
-			_elm_lang$core$Random$pair,
-			A2(_elm_lang$core$Random$int, 0, model.rows - 1),
-			A2(
-				_elm_lang$core$Random$list,
-				model.cols * model.rows,
-				A2(_elm_lang$core$Random$int, 0, 25))));
-};
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
-			case 'StartRound':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{showLetters: false, indicateRow: false}),
-					_1: _user$project$Main$getNewGrid(model)
-				};
-			case 'GetNewGrid':
-				var _p2 = _p1._0;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							showLetters: true,
-							seekRow: _elm_lang$core$Basics$fst(_p2),
-							grid: A2(
-								_user$project$Main$generateNewGrid,
-								_elm_lang$core$Basics$snd(_p2),
-								model.cols)
-						}),
-					_1: _user$project$Main$flashGrid(model)
-				};
-			case 'FlashGrid':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{showLetters: false}),
-					_1: _user$project$Main$promptForAnswer(model)
-				};
-			case 'PromptForAnswer':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{indicateRow: true}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'TickFail':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-			case 'CheckAnswer':
-				var _p4 = _p1._0;
-				if (_elm_lang$core$Native_Utils.eq(
-					_elm_lang$core$String$length(_p4),
-					model.cols)) {
-					var thisRow = _elm_lang$core$List$head(
-						A2(_elm_lang$core$List$drop, model.seekRow, model.grid));
-					var _p3 = thisRow;
-					if (_p3.ctor === 'Nothing') {
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{error: 'Grid is missing a row!'}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					} else {
-						var numCorrect = _elm_lang$core$List$sum(
-							A3(
-								_elm_lang$core$List$map2,
-								F2(
-									function (a, b) {
-										return _elm_lang$core$Native_Utils.eq(a, b) ? 1 : 0;
-									}),
-								_elm_lang$core$String$toList(
-									_elm_lang$core$String$toUpper(_p4)),
-								_p3._0));
-						var rowScore = ((numCorrect * 100) / model.cols) | 0;
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{score: model.score + rowScore, showLetters: true}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					}
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
-			case 'SpeedDown':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							showTime: A2(_elm_lang$core$Basics$max, 100, model.showTime - 25)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'SpeedUp':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							showTime: A2(_elm_lang$core$Basics$min, 1000, model.showTime + 25)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'DelayDown':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							delay: A2(_elm_lang$core$Basics$max, 25, model.delay - 25)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'DelayUp':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							delay: A2(_elm_lang$core$Basics$min, 1000, model.delay + 25)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'ColsDown':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							cols: A2(_elm_lang$core$Basics$max, 3, model.cols - 1)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'ColsUp':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							cols: A2(_elm_lang$core$Basics$min, 6, model.cols + 1)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'RowsDown':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							rows: A2(_elm_lang$core$Basics$max, 3, model.rows - 1)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							rows: A2(_elm_lang$core$Basics$min, 6, model.rows + 1)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-		}
-	});
-var _user$project$Main$StartRound = {ctor: 'StartRound'};
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -9156,6 +8932,7 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$placeholder('Letters...'),
+						_elm_lang$html$Html_Attributes$value(model.letters),
 						_elm_lang$html$Html_Events$onInput(_user$project$Main$CheckAnswer)
 					]),
 				_elm_lang$core$Native_List.fromArray(
@@ -9167,17 +8944,10 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[])),
 				_elm_lang$html$Html$text(
-				_elm_lang$core$Basics$toString(model.score)),
 				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Events$onClick(_user$project$Main$StartRound)
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Start')
-					])),
+					_elm_lang$core$String$append,
+					'Score: ',
+					_elm_lang$core$Basics$toString(model.score))),
 				A2(
 				_elm_lang$html$Html$br,
 				_elm_lang$core$Native_List.fromArray(
@@ -9312,6 +9082,257 @@ var _user$project$Main$view = function (model) {
 					]))
 			]));
 };
+var _user$project$Main$TickFail = function (a) {
+	return {ctor: 'TickFail', _0: a};
+};
+var _user$project$Main$FlashGrid = function (a) {
+	return {ctor: 'FlashGrid', _0: a};
+};
+var _user$project$Main$flashGrid = function (model) {
+	return A3(
+		_elm_lang$core$Task$perform,
+		_user$project$Main$TickFail,
+		_user$project$Main$FlashGrid,
+		_elm_lang$core$Process$sleep(
+			_elm_lang$core$Basics$toFloat(model.showTime)));
+};
+var _user$project$Main$PromptForAnswer = function (a) {
+	return {ctor: 'PromptForAnswer', _0: a};
+};
+var _user$project$Main$promptForAnswer = function (model) {
+	return A3(
+		_elm_lang$core$Task$perform,
+		_user$project$Main$TickFail,
+		_user$project$Main$PromptForAnswer,
+		_elm_lang$core$Process$sleep(
+			_elm_lang$core$Basics$toFloat(model.delay)));
+};
+var _user$project$Main$GetNewGrid = function (a) {
+	return {ctor: 'GetNewGrid', _0: a};
+};
+var _user$project$Main$getNewGrid = function (model) {
+	return A2(
+		_elm_lang$core$Random$generate,
+		_user$project$Main$GetNewGrid,
+		A2(
+			_elm_lang$core$Random$pair,
+			A2(_elm_lang$core$Random$int, 0, model.rows - 1),
+			A2(
+				_elm_lang$core$Random$list,
+				model.cols * model.rows,
+				A2(_elm_lang$core$Random$int, 0, 25))));
+};
+var _user$project$Main$init = function () {
+	var initialState = {
+		grid: A2(
+			_user$project$Main$generateNewGrid,
+			A2(_elm_lang$core$List$repeat, 12, 0),
+			4),
+		seekRow: 0,
+		cols: 4,
+		rows: 3,
+		showTime: 450,
+		delay: 50,
+		score: 0,
+		error: '',
+		letters: '',
+		showLetters: false,
+		indicateRow: false
+	};
+	return {
+		ctor: '_Tuple2',
+		_0: initialState,
+		_1: _user$project$Main$getNewGrid(initialState)
+	};
+}();
+var _user$project$Main$startRound = function (model) {
+	return {
+		ctor: '_Tuple2',
+		_0: _elm_lang$core$Native_Utils.update(
+			model,
+			{showLetters: false, indicateRow: false}),
+		_1: _user$project$Main$getNewGrid(model)
+	};
+};
+var _user$project$Main$StartNextRound = function (a) {
+	return {ctor: 'StartNextRound', _0: a};
+};
+var _user$project$Main$startNextRound = function (model) {
+	return A3(
+		_elm_lang$core$Task$perform,
+		_user$project$Main$TickFail,
+		_user$project$Main$StartNextRound,
+		_elm_lang$core$Process$sleep(
+			_elm_lang$core$Basics$toFloat(1000)));
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'StartNextRound':
+				return _user$project$Main$startRound(model);
+			case 'GetNewGrid':
+				var _p2 = _p1._0;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							showLetters: true,
+							seekRow: _elm_lang$core$Basics$fst(_p2),
+							grid: A2(
+								_user$project$Main$generateNewGrid,
+								_elm_lang$core$Basics$snd(_p2),
+								model.cols)
+						}),
+					_1: _user$project$Main$flashGrid(model)
+				};
+			case 'FlashGrid':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{showLetters: false}),
+					_1: _user$project$Main$promptForAnswer(model)
+				};
+			case 'PromptForAnswer':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{indicateRow: true}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'TickFail':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'CheckAnswer':
+				var _p4 = _p1._0;
+				if (_elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$String$length(_p4),
+					model.cols)) {
+					var thisRow = _elm_lang$core$List$head(
+						A2(_elm_lang$core$List$drop, model.seekRow, model.grid));
+					var _p3 = thisRow;
+					if (_p3.ctor === 'Nothing') {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{error: 'Grid is missing a row!'}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					} else {
+						var numCorrect = _elm_lang$core$List$sum(
+							A3(
+								_elm_lang$core$List$map2,
+								F2(
+									function (a, b) {
+										return _elm_lang$core$Native_Utils.eq(a, b) ? 1 : 0;
+									}),
+								_elm_lang$core$String$toList(
+									_elm_lang$core$String$toUpper(_p4)),
+								_p3._0));
+						var rowScore = ((numCorrect * 100) / model.cols) | 0;
+						var model$ = _elm_lang$core$Native_Utils.update(
+							model,
+							{score: model.score + rowScore, letters: '', showLetters: true});
+						return {
+							ctor: '_Tuple2',
+							_0: model$,
+							_1: _user$project$Main$startNextRound(model$)
+						};
+					}
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{letters: _p4}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
+			case 'SpeedDown':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							showTime: A2(_elm_lang$core$Basics$max, 100, model.showTime - 25)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'SpeedUp':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							showTime: A2(_elm_lang$core$Basics$min, 1000, model.showTime + 25)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'DelayDown':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							delay: A2(_elm_lang$core$Basics$max, 25, model.delay - 25)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'DelayUp':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							delay: A2(_elm_lang$core$Basics$min, 1000, model.delay + 25)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ColsDown':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							cols: A2(_elm_lang$core$Basics$max, 3, model.cols - 1)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ColsUp':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							cols: A2(_elm_lang$core$Basics$min, 6, model.cols + 1)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'RowsDown':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							rows: A2(_elm_lang$core$Basics$max, 3, model.rows - 1)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							rows: A2(_elm_lang$core$Basics$min, 6, model.rows + 1)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
 var _user$project$Main$main = {
 	main: _elm_lang$html$Html_App$program(
 		{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})
