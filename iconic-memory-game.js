@@ -9155,13 +9155,24 @@ var _user$project$Main$init = function () {
 		_1: _user$project$Main$getNewGrid(initialState)
 	};
 }();
+var _user$project$Main$StartRound = function (a) {
+	return {ctor: 'StartRound', _0: a};
+};
+var _user$project$Main$waitToStartRound = function (model) {
+	return A3(
+		_elm_lang$core$Task$perform,
+		_user$project$Main$TickFail,
+		_user$project$Main$StartRound,
+		_elm_lang$core$Process$sleep(
+			_elm_lang$core$Basics$toFloat(500)));
+};
 var _user$project$Main$startRound = function (model) {
 	return {
 		ctor: '_Tuple2',
 		_0: _elm_lang$core$Native_Utils.update(
 			model,
 			{letters: '', showLetters: false, indicateRow: false}),
-		_1: _user$project$Main$getNewGrid(model)
+		_1: _user$project$Main$waitToStartRound(model)
 	};
 };
 var _user$project$Main$StartNextRound = function (a) {
@@ -9181,6 +9192,12 @@ var _user$project$Main$update = F2(
 		switch (_p1.ctor) {
 			case 'StartNextRound':
 				return _user$project$Main$startRound(model);
+			case 'StartRound':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$Main$getNewGrid(model)
+				};
 			case 'GetNewGrid':
 				var _p2 = _p1._0;
 				return {
