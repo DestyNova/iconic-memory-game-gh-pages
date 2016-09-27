@@ -8730,6 +8730,12 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _user$project$Main$onKeyDown = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'keydown',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$keyCode));
+};
 var _user$project$Main$getMarker = F2(
 	function (showMarker, symbol) {
 		var markerStyle = _elm_lang$core$Native_List.fromArray(
@@ -8892,6 +8898,9 @@ var _user$project$Main$Model = function (a) {
 		};
 	};
 };
+var _user$project$Main$SkipOnEnter = function (a) {
+	return {ctor: 'SkipOnEnter', _0: a};
+};
 var _user$project$Main$RowsDown = {ctor: 'RowsDown'};
 var _user$project$Main$RowsUp = {ctor: 'RowsUp'};
 var _user$project$Main$ColsDown = {ctor: 'ColsDown'};
@@ -8931,9 +8940,10 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$html$Html$input,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$placeholder('Letters...'),
+						_elm_lang$html$Html_Attributes$placeholder('Letters, or enter to skip'),
 						_elm_lang$html$Html_Attributes$value(model.letters),
-						_elm_lang$html$Html_Events$onInput(_user$project$Main$CheckAnswer)
+						_elm_lang$html$Html_Events$onInput(_user$project$Main$CheckAnswer),
+						_user$project$Main$onKeyDown(_user$project$Main$SkipOnEnter)
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[])),
@@ -9150,7 +9160,7 @@ var _user$project$Main$startRound = function (model) {
 		ctor: '_Tuple2',
 		_0: _elm_lang$core$Native_Utils.update(
 			model,
-			{showLetters: false, indicateRow: false}),
+			{letters: '', showLetters: false, indicateRow: false}),
 		_1: _user$project$Main$getNewGrid(model)
 	};
 };
@@ -9321,7 +9331,7 @@ var _user$project$Main$update = F2(
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			default:
+			case 'RowsUp':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9331,6 +9341,13 @@ var _user$project$Main$update = F2(
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			default:
+				var _p5 = _p1._0;
+				if (_p5 === 13) {
+					return _user$project$Main$startRound(model);
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
 		}
 	});
 var _user$project$Main$main = {
